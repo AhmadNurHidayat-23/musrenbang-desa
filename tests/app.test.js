@@ -61,6 +61,6 @@ test('validasi skor, uang bulat, tanggal, CSRF dan rollback keputusan gagal',asy
 });
 test('SQLite persisten, sesi tersimpan sebagai hash dan logout membatalkan akses',async()=>{
  const file=path.join(mkdtempSync(path.join(tmpdir(),'musrenbang-')),'app.sqlite');let e=await setup(file);let cookie;
- try{const auth=await e.login('admin');cookie=auth;await e.request('areas','POST',{name:'Wilayah Persisten'},auth);assert.notEqual(e.store.get('SELECT token FROM sessions').token,auth.cookie.slice(12));}finally{await e.stop();}
+ try{const auth=await e.login('admin');cookie=auth;await e.request('areas','POST',{name:'Wilayah Persisten'},auth);assert.notEqual(e.store.get('SELECT token FROM sessions').token,auth.cookie.split('=')[1]);}finally{await e.stop();}
  e=await setup(file);try{assert.equal((await e.request('state','GET',undefined,cookie)).status,200);assert.equal(e.store.get('PRAGMA integrity_check').integrity_check,'ok');assert.equal((await e.request('logout','POST',{},cookie)).status,200);assert.equal((await e.request('state','GET',undefined,cookie)).status,401);}finally{await e.stop();}
 });

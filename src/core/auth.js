@@ -22,7 +22,7 @@ export function addUser(store,{username,name,role,password}) {
 export function installAuth(app,store) {
  const attempts=new Map();
  function session(req) {
-  const token=req.headers.cookie?.split(';').map(s=>s.trim()).find(s=>s.startsWith('app_session='))?.slice(12);
+  const token=req.headers.cookie?.split(';').map(s=>s.trim()).find(s=>s.startsWith('musrenbang_desa_session='))?.slice('musrenbang_desa_session='.length);
   if(!token||!/^[a-f0-9]{64}$/.test(token)) return null;
   return store.get('SELECT s.*,u.username,u.name,u.role FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token=? AND s.expires>?',digest(token),Date.now());
  }
@@ -49,12 +49,12 @@ export function installAuth(app,store) {
    if(req.session) store.run('DELETE FROM sessions WHERE token=?',req.session.token);
    store.run('INSERT INTO sessions(token,user_id,csrf,expires) VALUES(?,?,?,?)',digest(token),user.id,csrf,now+28800000);
   });
-  res.setHeader('Set-Cookie','app_session='+token+'; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800'+(process.env.SECURE_COOKIE==='1'?'; Secure':''));
+  res.setHeader('Set-Cookie','musrenbang_desa_session='+token+'; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800'+(process.env.SECURE_COOKIE==='1'?'; Secure':''));
   res.json({user:{id:user.id,name:user.name,role:user.role},csrf});
  });
  app.post('/api/logout',guard(),(req,res)=>{
   store.run('DELETE FROM sessions WHERE token=?',req.session.token);
-  res.setHeader('Set-Cookie','app_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0');
+  res.setHeader('Set-Cookie','musrenbang_desa_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0');
   res.json({message:'Anda telah keluar.'});
  });
  return guard;
